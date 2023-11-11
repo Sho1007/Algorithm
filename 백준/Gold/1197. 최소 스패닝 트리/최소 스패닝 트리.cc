@@ -2,36 +2,19 @@
 #include <queue>
 using namespace std;
 
-typedef struct FEdge
-{
-	int Start;
-	int End;
-	int Cost;
-
-	FEdge(int NewStart, int NewEnd, int NewCost) : Start(NewStart), End(NewEnd), Cost(NewCost) { }
-} FEdge;
-
 struct COMP
 {
-	bool operator()(FEdge* A, FEdge* B)
+	bool operator()(pair<int,int>& A, pair<int,int>& B)
 	{
-		return A->Cost > B->Cost;
+		return A.second > B.second;
 	}
 };
 
-int V, E, Answer = 0;
-int Start, End, Cost;
-int Parent[10'001];
-priority_queue<FEdge*, vector<FEdge*>, COMP> PQ;
+priority_queue<pair<int, int>, vector<pair<int, int>>, COMP> PQ;
 
-int GetParent(int VertexNum)
-{
-	if (Parent[VertexNum] == VertexNum) return VertexNum;
-
-	Parent[VertexNum] = GetParent(Parent[VertexNum]);
-
-	return Parent[VertexNum];
-}
+int V, E, Start, End, Cost, Answer = 0;
+vector<vector<pair<int, int>>> EdgeVector;
+bool Visited[10'001]{0, };
 
 int main()
 {
@@ -39,34 +22,32 @@ int main()
 
 	cin >> V >> E;
 
-	for (int i = 1; i <= V; ++i)
-	{
-		Parent[i] = i;
-	}
+	EdgeVector = vector<vector<pair<int, int>>>(V + 1);
 
 	for (int i = 0; i < E; ++i)
 	{
 		cin >> Start >> End >> Cost;
-		FEdge* Edge = new FEdge(Start, End, Cost);
-		PQ.push(Edge);
+		EdgeVector[Start].push_back({ End, Cost });
+		EdgeVector[End].push_back({ Start, Cost });
 	}
+
+
+	PQ.push({1, 0});
 
 	while (PQ.empty() == false)
 	{
-		FEdge* Edge = PQ.top(); PQ.pop();
+		pair<int,int> Current = PQ.top(); PQ.pop();
+		if (Visited[Current.first] == true) continue;
 
-		Start = Edge->Start;
-		End = Edge->End;
-		Cost = Edge->Cost;
+		//cout << Current.first << " : " << Current.second << '\n';
+		Visited[Current.first] = true;
+		Answer += Current.second;
 
-		delete Edge;
-
-		int StartParent = GetParent(Start);
-		int EndParent = GetParent(End);
-		if (StartParent == EndParent) continue;
-
-		Parent[StartParent] = EndParent;
-		Answer += Cost;
+		for (int i = 0; i < EdgeVector[Current.first].size(); ++i)
+		{
+			if (Visited[EdgeVector[Current.first][i].first] == true) continue;
+			PQ.push(EdgeVector[Current.first][i]);
+		}
 	}
 
 	cout << Answer << '\n';
