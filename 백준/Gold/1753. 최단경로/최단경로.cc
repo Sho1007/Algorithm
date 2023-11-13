@@ -1,63 +1,68 @@
 #include <iostream>
 #include <queue>
-#include <vector>
+#define INF 987'654'321
 using namespace std;
 
-int V, E, K;
 
-int Start, End, Cost;
-
-vector<int> CostVector;
-
-struct Comp
+struct COMP
 {
-	bool operator()(pair<int, int>& A, pair<int, int>& B)
+	bool operator()(pair<int,int>& A, pair<int,int>& B)
 	{
 		return A.second > B.second;
 	}
 };
 
-vector<vector<pair<int, int>>> Verticies;
+int V, E, K, Start, End, Cost;
+vector<vector<pair<int, int>>> EdgeVector;
+priority_queue<pair<int, int>, vector<pair<int, int>>, COMP> PQ;
+vector<int> CostVector;
 
-priority_queue<pair<int, int>, vector<pair<int, int>>, Comp> EdgeQueue;
-
-int main()
+void Dijkstra()
 {
-	cin >> V >> E >> K;
-	CostVector = vector<int>(V + 1, -1);
-	Verticies = vector<vector<pair<int, int>>>(V + 1);
+	PQ.push({ K, 0 });
 
-	for (int i = 0; i < E; ++i)
+	while (PQ.empty() == false)
 	{
-		cin >> Start >> End >> Cost;
+		pair<int, int> Current = PQ.top(); PQ.pop();
 
-		Verticies[Start].push_back({ End, Cost });
-	}
+		if (CostVector[Current.first] < Current.second) continue;
+		CostVector[Current.first] = Current.second;
 
-	EdgeQueue.push({ K, 0 });
-
-	while (!EdgeQueue.empty())
-	{
-		pair<int, int> Current = EdgeQueue.top(); EdgeQueue.pop();
-		End = Current.first;
-		Cost = Current.second;
-
-		if (CostVector[End] == -1 || CostVector[End] > Cost)
+		for (int i = 0; i < EdgeVector[Current.first].size(); ++i)
 		{
-			CostVector[End] = Cost;
-
-			for (int i = 0; i < Verticies[End].size(); ++i)
+			if (CostVector[EdgeVector[Current.first][i].first] > Current.second + EdgeVector[Current.first][i].second)
 			{
-				EdgeQueue.push({ Verticies[End][i].first,  Cost + Verticies[End][i].second});
+				PQ.push({ EdgeVector[Current.first][i].first, Current.second + EdgeVector[Current.first][i].second });
 			}
 		}
 	}
+}
 
+void Print()
+{
 	for (int i = 1; i < CostVector.size(); ++i)
 	{
-		if (CostVector[i] == -1) cout << "INF\n";
+		if (CostVector[i] == INF) cout << "INF\n";
 		else cout << CostVector[i] << '\n';
 	}
+}
+
+int main()
+{
+	ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+	cin >> V >> E >> K;
+
+	EdgeVector = vector<vector<pair<int, int>>>(V + 1);
+	for (int i = 0; i < E; ++i)
+	{
+		cin >> Start >> End >> Cost;
+		EdgeVector[Start].push_back({End, Cost});
+	}
+
+	CostVector = vector<int>(V + 1, INF);
+
+	Dijkstra();
+	Print();
 
 	return 0;
 }
