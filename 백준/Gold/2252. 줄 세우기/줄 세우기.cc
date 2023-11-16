@@ -1,11 +1,28 @@
 #include <iostream>
 #include <queue>
+#include <algorithm>
 using namespace std;
 
 int N, M, A, B;
 
 vector<pair<int, vector<int>>> StudentVector;
+vector<int> AnswerVector;
+vector<bool> VisitVector;
 queue<int> Queue;
+
+void DFS(int Current)
+{
+	for (int i = 0; i < StudentVector[Current].second.size(); ++i)
+	{
+		if (VisitVector[StudentVector[Current].second[i]] == false)
+		{
+			VisitVector[StudentVector[Current].second[i]] = true;
+			DFS(StudentVector[Current].second[i]);
+		}
+	}
+
+	AnswerVector.push_back(Current);
+}
 
 int main()
 {
@@ -14,6 +31,7 @@ int main()
 	cin >> N >> M;
 
 	StudentVector = vector<pair<int, vector<int>>>(N + 1);
+	VisitVector = vector<bool>(N + 1, false);
 
 	while (M-->0)
 	{
@@ -35,15 +53,14 @@ int main()
 	{
 		int Current = Queue.front(); Queue.pop();
 
-		cout << Current << ' ';
+		DFS(Current);
+	}
 
-		for (int i = 0; i < StudentVector[Current].second.size(); ++i)
-		{
-			if (--StudentVector[StudentVector[Current].second[i]].first == 0)
-			{
-				Queue.push(StudentVector[Current].second[i]);
-			}
-		}
+	reverse(AnswerVector.begin(), AnswerVector.end());
+
+	for (int i = 0; i < AnswerVector.size(); ++i)
+	{
+		cout << AnswerVector[i] << ' ';
 	}
 	cout << '\n';
 
