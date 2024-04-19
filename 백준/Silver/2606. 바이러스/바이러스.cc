@@ -1,45 +1,54 @@
 #include <iostream>
-#include <vector>
-
 using namespace std;
 
-int V, E;
+int N, M, A, B;
 
-vector<vector<int>> vec;
-vector<bool> visited;
+int Parent[101] = {};
 
-int Dfs(int here)
+int GetParent(int Num)
 {
-    visited[here] = true;
-    int sum = 1;
+    if (Parent[Num] == Num) return Num;
 
-    for (int there : vec[here])
-    {
-        if (!visited[there])
-            sum += Dfs(there);
-    }
-
-    return sum;
+    return Parent[Num] = GetParent(Parent[Num]);
 }
 
 int main()
 {
-    scanf("%d %d", &V, &E);
+    ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
 
-    vec = vector<vector<int>>(V);
-    visited = vector<bool>(V, false);
+    cin >> N;
+    cin >> M;
 
-    int v1, v2;
-    for (; E > 0; --E)
+    for (int i = 1; i <= N; ++i)
     {
-        scanf("%d %d", &v1, &v2);
-        v1--;
-        v2--;
-        vec[v1].push_back(v2);
-        vec[v2].push_back(v1);
+        Parent[i] = i;
     }
 
-    cout << Dfs(0) - 1 << endl;
+    while (M-->0)
+    {
+        cin >> A >> B;
 
+        int  ParentA = GetParent(A);
+        int ParentB = GetParent(B);
+
+        if (ParentA == ParentB) continue;
+
+        if (ParentA < ParentB)
+        {
+            Parent[ParentB] = ParentA; 
+        }
+        else
+        {
+            Parent[ParentA] = ParentB;
+        }
+    }
+
+    int Answer = 0;
+    for (int i = 2; i <= N; ++i)
+    {
+        if (GetParent(i) == 1) Answer++;
+    }
+    cout << Answer << '\n';
+    
     return 0;
 }
