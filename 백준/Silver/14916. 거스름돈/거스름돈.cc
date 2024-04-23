@@ -1,5 +1,8 @@
 #include <iostream>
+#define INF 987'654'321
 using namespace std;
+
+inline int MIN(int A, int B) { return A < B ? A : B; }
 
 int N;
 
@@ -11,22 +14,19 @@ int main()
 
     cin >> N;
 
-    for (int i = 0; i <= N; i += 2)
+    dp[0] = 0;
+    dp[1] = INF;
+    dp[2] = 1;
+    dp[3] = INF;
+    dp[4] = 2;
+
+    for (int i = 5; i <= N; ++i)
     {
-        if (i != 0)
-        {
-            if (dp[i] == 0 || dp[i] > dp[i-2] + 1)
-            {
-                dp[i] = dp[i-2] + 1;
-            }
-        }
-        for (int j = i + 5; j <= N; j += 5)
-        {
-            dp[j] = dp[j-5] + 1;
-        }
+        dp[i] = MIN(dp[i-2], dp[i-5]) + 1;
+        if (dp[i] == INF + 1) dp[i] = INF;
     }
 
-    if (dp[N] == 0) cout << "-1\n";
+    if (dp[N] == INF) cout << "-1\n";
     else cout << dp[N] << '\n';
     
     return 0;
