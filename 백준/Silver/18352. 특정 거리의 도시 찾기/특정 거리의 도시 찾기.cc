@@ -5,7 +5,7 @@ using namespace std;
 
 int N, M, K, X, A, B;
 
-map<int, vector<int>> adjMap;
+vector<int> adjVector[300'005];
 queue<int> Queue;
 vector<int> DistVector;
 
@@ -25,22 +25,22 @@ int main()
     {
         cin >> A >> B;
 
-        adjMap[A].push_back(B);
+        adjVector[A].push_back(B);
     }
 
     DistVector[X] = 0;
     
-    for (int i = 0; i < adjMap[X].size(); ++i)
+    for (int i = 0; i < adjVector[X].size(); ++i)
     {
-        DistVector[adjMap[X][i]] = 1;
-        Queue.push(adjMap[X][i]);
+        DistVector[adjVector[X][i]] = 1;
+        Queue.push(adjVector[X][i]);
     }
 
     while (Queue.empty() == false)
     {
         int Current = Queue.front(); Queue.pop();
 
-        for (int i : adjMap[Current])
+        for (int i : adjVector[Current])
         {
             if (DistVector[i] == -1 || DistVector[i] > DistVector[Current] + 1)
             {
