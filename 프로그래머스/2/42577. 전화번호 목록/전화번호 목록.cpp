@@ -1,31 +1,27 @@
 #include <string>
 #include <vector>
-#include <algorithm>
+#include <unordered_set>
 #include <iostream>
 
 using namespace std;
 
+unordered_set<string> Set;
+
 bool solution(vector<string> phone_book) {
-    int answer = true;
+    bool answer = true;
     
-    sort(phone_book.begin(), phone_book.end());
+    Set = unordered_set<string>(phone_book.begin(), phone_book.end());
     
-    for (int i = 0; i < phone_book.size()-1; ++i)
+    for (int i = 0; i < phone_book.size(); ++i)
     {
-        int length = phone_book[i].length() <= phone_book[i+1].length() ? phone_book[i].length() : phone_book[i+1].length();
-        
-        bool bIsSame = true;
-        for (int k = 0; k < length; ++k)
+        for (int j = 1; j <= phone_book[i].length() - 1; ++j)
         {
-            if (phone_book[i][k] != phone_book[i+1][k])
+            if (Set.find(phone_book[i].substr(0, j)) != Set.end())
             {
-                bIsSame = false;
-                break;
+                return false;
             }
         }
-        
-        if (bIsSame) return false;
     }
     
-    return true;
+    return answer;
 }
