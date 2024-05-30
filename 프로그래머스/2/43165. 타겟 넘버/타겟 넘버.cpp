@@ -3,27 +3,26 @@
 
 using namespace std;
 
-int Answer = 0;
+int answer = 0;
 
-void BackTracking(vector<int>& numbers, int target, int Current, int Pos)
+void BT(vector<int>& numbers, int result, int target, int pos)
 {
-    if (Pos == numbers.size())
+    if (pos == numbers.size())
     {
-        if (Current == target)
+        if (result == target)
         {
-            Answer++;
+            answer++;
         }
-        
         return;
     }
     
-    BackTracking(numbers, target, Current + numbers[Pos], Pos + 1);
-    BackTracking(numbers, target, Current - numbers[Pos], Pos + 1);
+    BT(numbers, result + numbers[pos], target, pos+1);
+    BT(numbers, result - numbers[pos], target, pos+1);
 }
 
 int solution(vector<int> numbers, int target) {
     
-    BackTracking(numbers, target, 0, 0);
+    BT(numbers, 0, target, 0);
     
-    return Answer;
+    return answer;
 }
