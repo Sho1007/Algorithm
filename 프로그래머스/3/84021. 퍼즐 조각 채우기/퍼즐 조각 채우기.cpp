@@ -5,188 +5,177 @@
 
 using namespace std;
 
+// 퍼즐을 raw position 을 배열에 저장하고, [회전] 시킨 값들도 전부 배열로 저장
+// 그냥 칸마다 비교하면 결국 내가 기준점으로 잡은 칸과 비교할 수 밖에 없음
+vector<vector<pair<int,int>>> blockVector[4];
+vector<vector<bool>> tableVisited;
+vector<bool> usedBlock;
 int answer = 0;
 
-int dy[4] = {0, 0, -1, 1};
-int dx[4] = {-1, 1, 0, 0};
+int dX[4] = {-1, 1, 0, 0};
+int dY[4] = {0, 0, -1, 1};
 
-vector<vector<bool>> TableVisit;
-vector<vector<bool>> BoardVisit;
-vector<vector<pair<int,int>>> BlockVector[4];
-vector<bool> Used;
-
-void PrintBlock()
+void SortVector(vector<pair<int,int>>& target)
 {
-    for (int i = 0; i < BlockVector[0].size(); ++i)
+    for (int i = 1; i < target.size(); ++i)
     {
-        cout << i << '\n';
-        for (int k = 0; k < 4; ++k)
-        {
-            for (int j = 0; j < BlockVector[0][i].size(); ++j)
-            {
-                cout << '{' << BlockVector[k][i][j].first << ',' << BlockVector[k][i][j].second << "}, ";
-            }
-            cout << '\n';
-        }
-        cout << '\n';
+        target[i].first -= target[0].first;
+        target[i].second -= target[0].second;
     }
+    target[0].first = 0;
+    target[0].second = 0;
+    sort(target.begin(), target.end());
 }
 
-vector<pair<int,int>> MakeBlock(vector<vector<int>>& table, int StartY, int StartX)
+void RotateBlock(vector<pair<int,int>>& currentBlock)
 {
-    vector<pair<int,int>> NewBlock;
-    queue<pair<int,int>> Queue;
-    
-    TableVisit[StartY][StartX] = true;
-    Queue.push({StartY, StartX});
-    NewBlock.push_back({0, 0});
-    
-    while (Queue.empty() == false)
+    for (int i = 0; i < currentBlock.size(); ++i)
     {
-        pair<int,int> Current = Queue.front(); Queue.pop();
+        int temp = -currentBlock[i].first;
+        currentBlock[i].first = currentBlock[i].second;
+        currentBlock[i].second = temp;
+    }
+    sort(currentBlock.begin(), currentBlock.end());
+}
+
+void FindBlock(vector<vector<int>>& table, pair<int,int> startPos)
+{
+    vector<pair<int,int>> currentBlock;
+    queue<pair<int,int>> blockQueue;
+    blockQueue.push(startPos);
+    currentBlock.push_back(startPos);
+    tableVisited[startPos.first][startPos.second] = true;
+    
+    while (blockQueue.empty() == false)
+    {
+        pair<int,int> currentPos = blockQueue.front(); blockQueue.pop();
         
         for (int i = 0; i < 4; ++i)
         {
-            int NextY = Current.first + dy[i];
-            int NextX = Current.second + dx[i];
+            int nextX = currentPos.first + dX[i];
+            int nextY = currentPos.second + dY[i];
             
-            if (NextY < 0 || NextY >= table.size() || NextX < 0 || NextX >= table[0].size()) continue;
-            if (TableVisit[NextY][NextX] == true || table[NextY][NextX] == 0) continue;
-            
-            TableVisit[NextY][NextX] = true;
-            Queue.push({NextY, NextX});
-            NewBlock.push_back({NextY - StartY, NextX - StartX});
+            if (nextX < 0 || nextX >= table.size() || nextY < 0 || nextY >= table.size()) continue;
+            if (tableVisited[nextX][nextY] || table[nextX][nextY] != 1) continue;
+            tableVisited[nextX][nextY] = true;
+            blockQueue.push({nextX, nextY});
+            currentBlock.push_back({nextX, nextY});
         }
     }
-    
-    return NewBlock;
-}
-
-void CheckBlock(vector<vector<int>>& game_board, int StartY, int StartX)
-{
-    queue<pair<int,int>> Queue;
-    vector<pair<int,int>> Blank;
-    Queue.push({StartY, StartX});
-    Blank.push_back({0, 0});
-    BoardVisit[StartY][StartX] = true;
-    
-    while (Queue.empty() == false)
+    SortVector(currentBlock);
+    for (int i = 0; i < 4; ++i)
     {
-        pair<int,int> Current = Queue.front(); Queue.pop();
-        
-        for (int i = 0; i < 4; ++i)
-        {
-            int NextY = Current.first + dy[i];
-            int NextX = Current.second + dx[i];
-            
-            if (NextY < 0 || NextY >= game_board.size() || NextX < 0 || NextX >= game_board[0].size()) continue;
-            if (BoardVisit[NextY][NextX] == true || game_board[NextY][NextX] == 1) continue;
-            
-            BoardVisit[NextY][NextX] = true;
-            Queue.push({NextY, NextX});
-            Blank.push_back({NextY - StartY, NextX - StartX});
-        }
+        blockVector[i].push_back(currentBlock);
+        RotateBlock(currentBlock);
+        // for (int j = 0; j < blockVector[i].back().size(); ++j)
+        // {
+        //     cout << '{' << blockVector[i].back()[j].first << ',' << blockVector[i].back()[j].second << "} ";
+        // }
+        // cout << '\n';
     }
-    
-    sort(Blank.begin(), Blank.end());
-    
-    // cout << "Blank : ";
-    // for (int i = 0; i < Blank.size(); ++i)
-    // {
-    //     cout << '{'<< Blank[i].first << ',' << Blank[i].second << "}, ";
-    // }
     // cout << '\n';
+}
+
+bool IsSameBlock(vector<pair<int,int>>& A, vector<pair<int,int>>& B)
+{
+    if (A.size() != B.size()) return false;
     
-    for (int i = 0; i < BlockVector[0].size(); ++i)
+    for (int i = 0; i < A.size(); ++i)
     {
-        if (Used[i]) continue;
+        if (A[i].first == B[i].first && A[i].second == B[i].second) continue;
+        else return false;
+    }
+    
+    return true;
+}
+
+void PutBlock(vector<vector<int>>& game_board, pair<int,int> startPos)
+{
+    vector<pair<int,int>> currentBlock;
+    queue<pair<int,int>> blockQueue;
+    blockQueue.push(startPos);
+    currentBlock.push_back(startPos);
+    tableVisited[startPos.first][startPos.second] = true;
+    
+    while (blockQueue.empty() == false)
+    {
+        pair<int,int> currentPos = blockQueue.front(); blockQueue.pop();
         
-        if (Blank.size() != BlockVector[0][i].size()) continue;
-        
+        for (int i = 0; i < 4; ++i)
+        {
+            int nextX = currentPos.first + dX[i];
+            int nextY = currentPos.second + dY[i];
+            
+            if (nextX < 0 || nextX >= game_board.size() || nextY < 0 || nextY >= game_board.size()) continue;
+            if (tableVisited[nextX][nextY] || game_board[nextX][nextY] != 0) continue;
+            tableVisited[nextX][nextY] = true;
+            blockQueue.push({nextX, nextY});
+            currentBlock.push_back({nextX, nextY});
+        }
+    }
+    
+    // sort(currentBlock.begin(), currentBlock.end());
+    
+    for (int i = 1; i < currentBlock.size(); ++i)
+    {
+        currentBlock[i].first -= currentBlock[0].first;
+        currentBlock[i].second -= currentBlock[0].second;
+    }
+    
+    currentBlock[0] = {0, 0};
+    
+    sort(currentBlock.begin(), currentBlock.end());
+    
+    for (int i = 0; i < blockVector[0].size(); ++i)
+    {
+        if (usedBlock[i]) continue;
         for (int j = 0; j < 4; ++j)
         {
-            bool bIsSame = true;
-            for (int k = 0; k < BlockVector[j][i].size(); ++k)
+            if (IsSameBlock(currentBlock, blockVector[j][i]))
             {
-                if (BlockVector[j][i][k] != Blank[k])
-                {
-                    bIsSame = false;
-                    break;
-                }
-            }
-            if (bIsSame)
-            {
-                Used[i] = true;
-                answer += Blank.size();
+                usedBlock[i] = true;
+                answer += currentBlock.size();
                 return;
             }
         }
     }
     
-    for (int i = 0; i < Blank.size(); ++i)
+    for (int i = 0; i < currentBlock.size(); ++i)
     {
-        BoardVisit[Blank[i].first + StartY][Blank[i].second + StartX] = false;
+        tableVisited[currentBlock[i].first + startPos.first][currentBlock[i].second + startPos.second] = false;      
     }
 }
 
+
 int solution(vector<vector<int>> game_board, vector<vector<int>> table) {
     
-    TableVisit = vector<vector<bool>>(table.size(), vector<bool>(table[0].size(), false));
+    tableVisited = vector<vector<bool>>(table.size(), vector<bool>(table[0].size(), false));
     
     for (int i = 0; i < table.size(); ++i)
     {
-        for (int j = 0; j < table[0].size(); ++j)
+        for (int j = 0; j < table.size(); ++j)
         {
-            if (TableVisit[i][j] == false && table[i][j] == 1)
+            if (tableVisited[i][j] == false && table[i][j] == 1)
             {
-                vector<pair<int,int>> NewBlock = MakeBlock(table, i, j);
-                BlockVector[0].push_back(NewBlock);
-                BlockVector[2].push_back(NewBlock);
-                
-                for (int k = 0; k < NewBlock.size(); ++k)
-                {
-                    int Temp = NewBlock[k].first;
-                    NewBlock[k].first = NewBlock[k].second;
-                    NewBlock[k].second = -Temp;
-                }
-                
-                BlockVector[1].push_back(NewBlock);
-                BlockVector[3].push_back(NewBlock);
-                
-                for (int k = 0; k < NewBlock.size(); ++k)
-                {
-                    BlockVector[2][BlockVector[2].size()-1][k].first *= -1;
-                    BlockVector[2][BlockVector[2].size()-1][k].second *= -1;
-                    BlockVector[3][BlockVector[3].size()-1][k].first *= -1;
-                    BlockVector[3][BlockVector[3].size()-1][k].second *= -1;
-                }
-                
-                int LastIndex = BlockVector[0].size() - 1;
-                sort(BlockVector[0][LastIndex].begin(), BlockVector[0][LastIndex].end());
-                sort(BlockVector[1][LastIndex].begin(), BlockVector[1][LastIndex].end());
-                sort(BlockVector[2][LastIndex].begin(), BlockVector[2][LastIndex].end());
-                sort(BlockVector[3][LastIndex].begin(), BlockVector[3][LastIndex].end());
-                
+                FindBlock(table, {i, j});
             }
         }
     }
     
-    Used = vector<bool>(BlockVector[0].size(), false);
-    
-    // PrintBlock();
-    
-    BoardVisit = vector<vector<bool>>(table.size(), vector<bool>(table[0].size(), false));
+    usedBlock = vector<bool>(blockVector[0].size(), false);
+    tableVisited = vector<vector<bool>>(table.size(), vector<bool>(table[0].size(), false));
     
     for (int i = 0; i < game_board.size(); ++i)
     {
-        for (int j = 0; j < game_board[0].size(); ++j)
+        for (int j = 0; j < game_board[i].size(); ++j)
         {
-            if (BoardVisit[i][j] == false && game_board[i][j] == 0)
+            if (tableVisited[i][j] == false && game_board[i][j] == 0)
             {
-                CheckBlock(game_board, i, j);
+                PutBlock(game_board, {i, j});
             }
         }
     }
+    
     
     return answer;
 }
