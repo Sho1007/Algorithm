@@ -3,25 +3,36 @@
 #include <algorithm>
 #include <iostream>
 
-using namespace std;
+int parent[101] = {};
 
-vector<int> Parent;
-
-int GetParent(int Current)
+int Find(int num)
 {
-    if (Parent[Current] == Current) return Current;
+    if (parent[num] == num) return num;
     
-    return Parent[Current] = GetParent(Parent[Current]);
+    return parent[num] = Find(parent[num]);
 }
+
+bool Union(int A, int B)
+{
+    int parentA = Find(A);
+    int parentB = Find(B);
+    
+    if (parentA == parentB) return false;
+    
+    parent[parentB] = parentA;
+    
+    return true;
+}
+
+
+using namespace std;
 
 int solution(int n, vector<vector<int>> costs) {
     int answer = 0;
     
-    Parent = vector<int>(n+1);
-    
-    for (int i = 1; i <= n; ++i)
+    for (int i = 1; i <= 100; ++i)
     {
-        Parent[i] = i;
+        parent[i] = i;
     }
     
     sort(costs.begin(), costs.end(), [](vector<int>& A, vector<int>& B)->bool
@@ -31,14 +42,10 @@ int solution(int n, vector<vector<int>> costs) {
     
     for (int i = 0; i < costs.size(); ++i)
     {
-        int ParentA = GetParent(costs[i][0]);
-        int ParentB = GetParent(costs[i][1]);
-        if (ParentA == ParentB) continue;
-        
-        answer += costs[i][2];
-        Parent[ParentA] = ParentB;
-        
-        
+        if (Union(costs[i][0], costs[i][1]))
+        {
+            answer += costs[i][2];
+        }
     }
     
     return answer;
