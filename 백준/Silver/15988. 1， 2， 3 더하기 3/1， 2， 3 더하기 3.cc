@@ -6,33 +6,6 @@ using namespace std;
 unsigned int N, Input;
 unsigned int  DP[1'000'001] = {};
 
-unsigned int Calc(unsigned int Num)
-{
-	if (DP[Num] == 0)
-	{
-		unsigned int Sum = 0;
-		if (0 < Num && Num <= 3)
-		{
-			Sum++;
-		}
-
-		for (int i = 1; i <= 3; ++i)
-		{
-			if (Num - i == 0)
-			{
-				break;
-			}
-
-			Sum += Calc(Num - i);
-			Sum %= MOD;
-		}
-
-		DP[Num] = Sum;
-	}
-
-	return DP[Num];
-}
-
 
 int main()
 {
@@ -40,10 +13,23 @@ int main()
 
 	cin >> N;
 
+	DP[1] = 1;
+	DP[2] = 2;
+	DP[3] = 4;
+
+	for (unsigned int i = 4; i <= 1'000'000; ++i)
+	{
+		for (unsigned int j = 1; j <= 3; ++j)
+		{
+			DP[i] += DP[i - j];
+			DP[i] %= MOD;
+		}
+	}
+
 	while (N-- > 0)
 	{
 		cin >> Input;
-		cout << Calc(Input) << '\n';
+		cout << DP[Input] << '\n';
 	}
 
 	return 0;
