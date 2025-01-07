@@ -3,14 +3,14 @@
 #define MOD 1'000'000'009
 using namespace std;
 
-int N, Input;
-unsigned long long  DP[1'000'001] = {};
+unsigned int N, Input;
+unsigned int  DP[1'000'001] = {};
 
-int Calc(int Num)
+unsigned int Calc(unsigned int Num)
 {
 	if (DP[Num] == 0)
 	{
-		unsigned long long Sum = 0;
+		unsigned int Sum = 0;
 		if (0 < Num && Num <= 3)
 		{
 			Sum++;
