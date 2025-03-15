@@ -4,7 +4,7 @@ using namespace std;
 
 int N, K, StartPos = 0, CurrentLength = 0, MaxLength = 0;
 int Array[200'001] = {};
-map<int, int> CountMap;
+int Count[100'001] = {};
 
 int main()
 {
@@ -15,11 +15,15 @@ int main()
     for (int i = 0; i < N; ++i)
     {
         cin >> Array[i];
-        if (++CountMap[Array[i]] > K)
+    }
+
+    for (int i = 0; i < N; ++i)
+    {
+        if (++Count[Array[i]] > K)
         {
             for (; StartPos < i; ++StartPos)
             {
-                CountMap[Array[StartPos]]--;
+                Count[Array[StartPos]]--;
                 if (Array[StartPos] == Array[i])
                 {
                     StartPos++;
