@@ -3,8 +3,10 @@
 #include <vector>
 using namespace std;
 
+inline int MAX(int A, int B) { return A > B ? A : B; }
+
 string A, B;
-vector<vector<int>> SubstringLength;
+int dp[4001][4001] = {};
 int Answer = 0;
 
 int main()
@@ -15,31 +17,15 @@ int main()
     
     cin >> A >> B;
     
-    SubstringLength = vector<vector<int>>(A.length(), vector<int>(B.length()));
-    
-    for (int i = 0; i < A.length(); ++i)
+    for (int i = 1; i <= A.length(); ++i)
     {
-        for (int j = 0; j < B.length(); ++j)
+        for (int j = 1; j <= B.length(); ++j)
         {
-            if (A[i] == B[j])
+            if (A[i-1] == B[j-1])
             {
-                if (i > 0 && j > 0 && SubstringLength[i-1][j-1] > 0)
-                {
-                    SubstringLength[i][j] = SubstringLength[i-1][j-1] + 1;
-                }
-                else
-                {
-                    SubstringLength[i][j] = 1;
-                }
+                dp[i][j] = dp[i-1][j-1] + 1;
                 
-                if (SubstringLength[i][j] > Answer)
-                {
-                    Answer = SubstringLength[i][j];
-                }
-            }
-            else
-            {
-                SubstringLength[i][j] = 0;
+                Answer = MAX(Answer, dp[i][j]);
             }
         }
     }
